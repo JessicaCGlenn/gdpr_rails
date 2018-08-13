@@ -17,6 +17,7 @@ module PolicyManager
       @@portability_rules = []
       @@portability_templates = []
       @@scripts = []
+      @@helper_includes = []
 
       yield self
 
@@ -38,6 +39,14 @@ module PolicyManager
 
     def self.exporter=(opts)
       @@exporter = Exporter.new(opts)
+    end
+
+    def self.add_helper_include helper
+      @@helper_includes << helper
+    end
+
+    def self.get_helper_includes
+      @@helper_includes
     end
 
     def self.is_admin?(user)

@@ -5,6 +5,10 @@ module PolicyManager
       include Doorman::Controller
     end
 
+    Config.get_helper_includes.each do |inc|
+      include inc.constantize
+    end
+
     before_action :user_authenticated?
     before_action :set_language
 
