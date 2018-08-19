@@ -36,9 +36,9 @@
                 <%= I18n.t("terms_app.user_portability_requests.index.states.#{portability_request.state}") %>
               </span>
               </td>
-              <% if portability_request.completed? %>
+              <% if portability_request.completed? && portability_request.attachment.attached? %>
                 <td>
-                    <%= link_to portability_request.attachment.expiring_url(60), class: "btn btn-secondary btn-sm" do %>
+                    <%= link_to portability_request.download_link, class: "btn btn-secondary btn-sm" do %>
                     <i class="fa fa-download"></i>
                     <%= I18n.t("terms_app.misc.download")%>
                   <% end %>

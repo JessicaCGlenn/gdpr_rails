@@ -35,10 +35,10 @@ module PolicyManager
       end
     end
 
-    #def destroy
-    #  PortabilityRequest.find(params[:id]).destroy
-    #  redirect_to user_portability_requests_url, notice: I18n.t("terms_app.portability_requests.index.destroyed")
-    #end
+    def destroy
+     PortabilityRequest.find(params[:id]).destroy
+     redirect_to user_portability_requests_url, notice: I18n.t("terms_app.portability_requests.index.destroyed")
+    end
 
   end
 end

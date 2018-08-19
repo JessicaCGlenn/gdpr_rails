@@ -13,7 +13,11 @@ module PolicyManager
                   :expiration_link,
                   :customize_link,
                   :mailer_templates,
-                  :mailer
+                  :mailer,
+                  :progress_callback,
+                  :completed_callback,
+                  :admin_progress_callback,
+                  :host
 
     def initialize(opts={})
       self.path = opts[:path]
@@ -27,6 +31,10 @@ module PolicyManager
       self.expiration_link = opts[:expiration_link]
       self.customize_link = opts[:customize_link]
       self.mailer_templates = opts[:mailer_templates]
+      self.progress_callback = opts[:progress_callback]
+      self.completed_callback = opts[:completed_callback]
+      self.admin_progress_callback = opts[:admin_progress_callback]
+      self.host = opts[:host]
     end
 
     def perform(resource)

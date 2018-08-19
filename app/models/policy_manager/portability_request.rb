@@ -1,18 +1,19 @@
-require "paperclip"
 require "aasm"
 
 module PolicyManager
   class PortabilityRequest < ApplicationRecord
-    include Paperclip::Glue
+    # include Paperclip::Glue
 
-    belongs_to :user, class_name: Config.user_resource.to_s
+    belongs_to :user, class_name: Config.user_resource.to_s, foreign_key: 'user_id'
 
-    has_attached_file :attachment, 
-      path: Config.exporter.try(:attachment_path) || Rails.root.join("tmp/portability/:id/build.zip").to_s, 
-      storage: Config.exporter.try(:attachment_storage) || :filesystem,
-      s3_permissions: :private
+    has_one_attached :attachment
 
-    do_not_validate_attachment_file_type :attachment
+    # has_attached_file :attachment, 
+    #   path: Config.exporter.try(:attachment_path) || Rails.root.join("tmp/portability/:id/build.zip").to_s, 
+    #   storage: Config.exporter.try(:attachment_storage) || :filesystem,
+    #   s3_permissions: :private
+
+    # do_not_validate_attachment_file_type :attachment
 
     include AASM
 
@@ -35,14 +36,14 @@ module PolicyManager
     end
 
     def file_remote_url=(url_value)
-      self.attachment = File.open(url_value) unless url_value.blank?
-      self.save
+      self.attachment.attach(io: open(url_value), filename: "portability_request_#{self.id}.zip") unless url_value.blank?
+      # self.attachment = File.open(url_value) unless url_value.blank?
+      # self.save
       self.complete!
     end
 
     def download_link
-      url = self.attachment.expiring_url(PolicyManager::Config.exporter.expiration_link) 
-      PolicyManager::Config.exporter.customize_link(url)
+      url = Rails.application.routes.url_helpers.rails_blob_url(self.attachment, disposition: "attachment", host: Config.exporter.host)
     end
 
     def handle_progress
@@ -55,15 +56,27 @@ module PolicyManager
     end
 
     def notify_progress
-      PortabilityMailer.progress_notification(self.id).deliver_now
+      if Config.exporter.progress_callback.present?
+        Config.exporter.progress_callback.call(self.id)
+      else
+        PortabilityMailer.progress_notification(self.id).deliver_now
+      end
     end
 
     def notify_progress_to_admin
-      PortabilityMailer.admin_notification(self.user.id).deliver_now
+      if Config.exporter.admin_progress_callback.present?
+        Config.exporter.admin_progress_callback.call(self.id)
+      else
+        PortabilityMailer.admin_notification(self.id).deliver_now
+      end
     end
 
     def notify_completeness
-      PortabilityMailer.completed_notification(self.id).deliver_now
+      if Config.exporter.completed_callback.present?
+        Config.exporter.completed_callback.call(self.id)
+      else
+        PortabilityMailer.completed_notification(self.id).deliver_now
+      end
     end
 
   end

@@ -3,9 +3,9 @@ module PolicyManager::Concerns::UserBehavior
   extend ActiveSupport::Concern
 
   included do
-    has_many :user_terms, class_name: "PolicyManager::UserTerm", autosave: true
-    has_many :terms, through: :user_terms, class_name: "PolicyManager::Term"
-    has_many :portability_requests, class_name: "PolicyManager::PortabilityRequest"
+    has_many :user_terms, class_name: "PolicyManager::UserTerm", autosave: true, foreign_key: 'user_id'
+    has_many :terms, through: :user_terms, class_name: "PolicyManager::Term", foreign_key: 'user_id'
+    has_many :portability_requests, class_name: "PolicyManager::PortabilityRequest", foreign_key: 'user_id'
 
     # adds policies
     PolicyManager::Config.rules.each do |rule|
@@ -134,6 +134,14 @@ module PolicyManager::Concerns::UserBehavior
     if term.present?
       user_term = self.handle_policy_for(term)
       user_term.accept! unless user_term.accepted?
+    end
+  end
+
+  def reject_policy_from(name)
+    term = PolicyManager::Config.rules.find{|o| o.name == name}.terms.published.last
+    if term.present?
+      user_term = self.handle_policy_for(term)
+      user_term.reject! unless user_term.rejected?
     end
   end
 
