@@ -2,6 +2,7 @@ require_dependency "policy_manager/application_controller"
 
 module PolicyManager
   class UserPortabilityRequestsController < ApplicationController
+    require 'anl'
 
     def index
       @user_portability_requests = current_user.portability_requests
@@ -12,10 +13,12 @@ module PolicyManager
     end
 
     def create
+
       respond_to do |format|
        
           if current_user.can_request_portability?
             if current_user.portability_requests.create
+              Anl.track(current_user.uid, "Created Portability Request", {})
               format.html{
                 redirect_to user_portability_requests_path, notice: I18n.t("terms_app.user_portability_requests.index.created")
               }

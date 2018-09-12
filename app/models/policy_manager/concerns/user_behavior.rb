@@ -8,6 +8,12 @@ module PolicyManager::Concerns::UserBehavior
     has_many :portability_requests, class_name: "PolicyManager::PortabilityRequest", foreign_key: 'user_id'
 
     # adds policies
+    #
+    # todo : remove me before this goes up again
+    p "How many config rules exist at the moment?"
+    p PolicyManager::Config.rules
+    p PolicyManager::Config
+    p PolicyManager
     PolicyManager::Config.rules.each do |rule|
       # next if rule. !internal?
       rule_name = "policy_rule_#{rule.name}".to_sym

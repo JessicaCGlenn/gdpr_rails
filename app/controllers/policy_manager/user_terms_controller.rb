@@ -2,7 +2,7 @@ require_dependency "policy_manager/application_controller"
 
 module PolicyManager
   class UserTermsController < ApplicationController
-
+    require 'anl'
     skip_before_action :user_authenticated?, only: [:show, :accept, :reject, :blocking_terms]
     before_action :set_user_term, only: [:accept, :reject, :show, :edit, :update, :destroy]
 
@@ -125,6 +125,9 @@ module PolicyManager
 
       def handle_term_accept
         if current_user
+          Anl.track(current_user.uid, "Accepted Term", {
+              rule: @term.rule,
+          })
           @user_term = current_user.handle_policy_for(@term)
           if @user_term.accept!
             @term.rule.on_accept.call(self) if @term.rule.on_accept.is_a?(Proc)
@@ -139,6 +142,9 @@ module PolicyManager
 
       def handle_term_reject
         if current_user
+          Anl.track(current_user.uid, "Rejected Term", {
+              rule: @term.rule,
+          })
           @user_term = current_user.handle_policy_for(@term)
           if @user_term.reject!
             @term.rule.on_reject.call(self) if @term.rule.on_reject.is_a?(Proc)

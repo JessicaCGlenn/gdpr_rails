@@ -12,9 +12,14 @@ module PolicyManager
                    :user_resource,
                    :admin_user_resource
 
-    def self.setup
+    def self.pre_init
       @@rules = []
       @@portability_rules = []
+    end
+
+    def self.setup
+      # @@rules = []
+      # @@portability_rules = []
       @@portability_templates = []
       @@scripts = []
       @@helper_includes = []
